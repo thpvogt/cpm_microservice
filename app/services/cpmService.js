@@ -1,8 +1,8 @@
 const walkForward = (currentActivity, currentTime, activities) => {
   const currentEnd = currentTime + currentActivity.duration;
-  const prevActivities = activities.filter(activity => {
-    return activity.nextActivities.indexOf(currentActivity.id) != -1;
-  }).map(activity => activity.id);
+  const prevActivities = activities
+    .filter(activity => activity.nextActivities.indexOf(currentActivity.id) !== -1)
+    .map(activity => activity.id);
   const newNode = {
     id: currentActivity.id,
     duration: currentActivity.duration,
@@ -11,47 +11,47 @@ const walkForward = (currentActivity, currentTime, activities) => {
     nextNodes: currentActivity.nextActivities,
     prevNodes: prevActivities,
   };
-  let nodes = [ newNode ];
-  currentActivity.nextActivities.forEach(activityId => {
-    const nextActivity = activities.find(activity =>  activity.id === activityId);
+  let nodes = [newNode];
+  currentActivity.nextActivities.forEach((activityId) => {
+    const nextActivity = activities.find(activity => activity.id === activityId);
     const nextNodes = walkForward(nextActivity, currentEnd, activities);
     nodes = nodes.concat(nextNodes);
   });
   return nodes;
-}
+};
 
 const walkBackwards = (currentNode, currentTime, nodes) => {
   const delay = currentTime - currentNode.earlyEnd;
-  const node = {
+  const newNode = {
     ...currentNode,
     lateStart: currentNode.earlyStart + delay,
     lateEnd: currentNode.earlyEnd + delay,
-    isCritical: delay === 0 ? true : false,
-  }
-  let updatedNodes = [node];
-  currentNode.prevNodes.forEach(nodeId => {
-    const prevNode = nodes.find(node =>  node.id === nodeId);
-    const prevNodes = walkBackwards(prevNode, node.lateStart, nodes);
+    isCritical: delay === 0,
+  };
+  let updatedNodes = [newNode];
+  currentNode.prevNodes.forEach((nodeId) => {
+    const prevNode = nodes.find(node => node.id === nodeId);
+    const prevNodes = walkBackwards(prevNode, newNode.lateStart, nodes);
     updatedNodes = updatedNodes.concat(prevNodes);
   });
   return updatedNodes;
-}
+};
 
-const filterDuplicateForward = (activities, originalNodes) => { 
+const filterDuplicateForward = (activities, originalNodes) => {
   const newNodes = [];
-  activities.forEach((activity) => { 
+  activities.forEach((activity) => {
     const correspondingNodes = originalNodes.filter(node => node.id === activity.id);
-    const sortedNodes = correspondingNodes.sort((a, b) =>  b.earlyEnd - a.earlyEnd );
+    const sortedNodes = correspondingNodes.sort((a, b) => b.earlyEnd - a.earlyEnd);
     newNodes.push(sortedNodes[0]);
   });
   return newNodes;
-}
+};
 
-const filterDuplicateBackwards = (activities, originalNodes) => { 
+const filterDuplicateBackwards = (activities, originalNodes) => {
   const newNodes = [];
-  activities.forEach((activity) => { 
+  activities.forEach((activity) => {
     const correspondingNodes = originalNodes.filter(node => node.id === activity.id);
-    const sortedNodes = correspondingNodes.sort((a, b) =>  b.earlyEnd - a.earlyEnd );
+    const sortedNodes = correspondingNodes.sort((a, b) => b.earlyEnd - a.earlyEnd);
     const criticalNodes = sortedNodes.filter(node => node.isCritical);
     if (criticalNodes.length > 0) {
       newNodes.push(criticalNodes[0]);
@@ -60,11 +60,10 @@ const filterDuplicateBackwards = (activities, originalNodes) => {
     }
   });
   return newNodes;
-}
+};
 
 const generateProject = (input) => {
-  console.log(input.activities);
-  const firstActivity = input.activities.find(activity =>  activity.id === input.startActivity);
+  const firstActivity = input.activities.find(activity => activity.id === input.startActivity);
   const forwardNodes = walkForward(firstActivity, 0, input.activities);
   const filteredForwardNodes = filterDuplicateForward(input.activities, forwardNodes);
 
@@ -73,8 +72,7 @@ const generateProject = (input) => {
   const backwardNodes = walkBackwards(lastNode, projectEnd, filteredForwardNodes);
   const filteredBackwardNodes = filterDuplicateBackwards(input.activities, backwardNodes);
 
-  console.log(filteredBackwardNodes);
-  // console.log(backwardNodes);
-}
+  return filteredBackwardNodes;
+};
 
 module.exports = generateProject;
