@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { exec } = require('child_process');
 
-const GRAPH_RENDER_COMMAND = `dot app/data/graph -o ${__dirname}/diagram.png -T png -v`;
+const GRAPH_RENDER_COMMAND = 'dot app/data/graph -o app/data/diagram.png -T png -v';
 
 const writeFile = (graphString) => {
   fs.writeFile('app/data/graph', graphString.join('\n'), (err) => {

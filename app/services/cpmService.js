@@ -1,4 +1,7 @@
-const walkForward = (currentActivity, currentTime, activities) => {
+const walkForward = (currentActivity, currentTime, activities, visited) => {
+  if (visited.indexOf(currentActivity.id) !== -1) {
+    throw new Error('Looped graph');
+  }
   const currentEnd = currentTime + currentActivity.duration;
   const prevActivities = activities
     .filter(activity => activity.nextActivities.indexOf(currentActivity.id) !== -1)
@@ -14,7 +17,9 @@ const walkForward = (currentActivity, currentTime, activities) => {
   let nodes = [newNode];
   currentActivity.nextActivities.forEach((activityId) => {
     const nextActivity = activities.find(activity => activity.id === activityId);
-    const nextNodes = walkForward(nextActivity, currentEnd, activities);
+    const nextVisited = visited;
+    nextVisited.push(currentActivity.id);
+    const nextNodes = walkForward(nextActivity, currentEnd, activities, nextVisited);
     nodes = nodes.concat(nextNodes);
   });
   return nodes;
@@ -64,7 +69,8 @@ const filterDuplicateBackwards = (activities, originalNodes) => {
 
 const generateProject = (input) => {
   const firstActivity = input.activities.find(activity => activity.id === input.startActivity);
-  const forwardNodes = walkForward(firstActivity, 0, input.activities);
+  const visited = [];
+  const forwardNodes = walkForward(firstActivity, 0, input.activities, visited);
   const filteredForwardNodes = filterDuplicateForward(input.activities, forwardNodes);
 
   const lastNode = filteredForwardNodes.find(node => node.nextNodes.length === 0);

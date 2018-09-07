@@ -62,3 +62,4 @@ typings/
 
 #graph temporal files
 app/data/graph
+app/data/diagram.png
