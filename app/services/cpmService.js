@@ -78,7 +78,12 @@ const generateProject = (input) => {
   const backwardNodes = walkBackwards(lastNode, projectEnd, filteredForwardNodes);
   const filteredBackwardNodes = filterDuplicateBackwards(input.activities, backwardNodes);
 
-  return filteredBackwardNodes;
+  const newProject = {
+    name: input.name,
+    nodes: filteredBackwardNodes,
+  };
+
+  return newProject;
 };
 
 module.exports = generateProject;
